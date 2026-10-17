@@ -93,12 +93,19 @@ if $do_web; then
   # --bun obliga a que los binarios de node_modules corran con bun y no con el
   # node del sistema. Sin esto, astro y vite siguen su shebang hacia node, y si
   # el del servidor es viejo, el build muere aunque bun esté al día.
+  # NODE_ENV=development a proposito: con production, bun se salta las
+  # devDependencies, y ahi viven typescript y los @types. El build las necesita
+  # aunque el resultado sea estatico.
+  #
+  # Sin --silent: si una dependencia no se instala, quiero verlo aqui y no
+  # veinte lineas despues disfrazado de error de tipos.
   say "construyendo el portafolio"
-  ( cd "$PORTAFOLIO" && bun install --silent &&
+  ( cd "$PORTAFOLIO" && NODE_ENV=development bun install --frozen-lockfile &&
     PUBLIC_DEMO_API="$DEMO_API" PUBLIC_DEMO_WEB="$DEMO_WEB" bun --bun run build )
 
   say "construyendo el frontend del marketplace"
-  ( cd "$FRONT" && bun install --silent && bun --bun run build )
+  ( cd "$FRONT" && NODE_ENV=development bun install --frozen-lockfile &&
+    bun --bun run build )
 
   say "publicando los sitios"
   sudo mkdir -p /var/www/portafolio /var/www/marketplace
