@@ -25,6 +25,6 @@
       "@marketplace/contracts/*": ["./node_modules/@marketplace/contracts/schemas/*"]
     }
   },
-  "include": ["src/**/*", "scripts/**/*.ts", "drizzle.config.ts", "../shared/schemas/**/*"],
+  "include": ["src/**/*", "scripts/**/*.ts", "drizzle.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
