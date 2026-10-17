@@ -153,6 +153,25 @@ if $do_nginx; then
   done
   nginx -t
   systemctl reload nginx
+
+  # Copiar las plantillas pisa lo que certbot escribio en esos archivos: los
+  # bloques de 443 con las rutas de los certificados. Sin esto, nginx se queda
+  # sin HTTPS para estos nombres y acaba presentando el certificado de otro
+  # sitio del servidor.
+  #
+  # `certbot install` no habla con Let's Encrypt: reinstala un certificado que
+  # ya existe, asi que no gasta intentos contra el limite.
+  for cert in "$PORTFOLIO_DOMAIN" demo.alfredomejia.com.mx; do
+    if certbot certificates 2>/dev/null | grep -q "Certificate Name: $cert"; then
+      echo "  reinstalando el certificado de $cert"
+      certbot install --nginx --cert-name "$cert" --non-interactive --redirect >/dev/null
+    else
+      echo "  sin certificado para $cert todavia (corre --tls)"
+    fi
+  done
+
+  nginx -t
+  systemctl reload nginx
   echo "  configuracion recargada"
 fi
 

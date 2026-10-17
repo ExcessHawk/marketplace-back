@@ -102,6 +102,24 @@ cd ~/portafolio/marketplace-back && bash deploy/scripts/server.sh
 Hace `git pull` en los tres repos y reconstruye lo que toque. Con `--web` o
 `--api` limitas a una parte, y con `--no-pull` usas lo que ya está clonado.
 
+## Nginx y certbot se pisan
+
+Las plantillas de `deploy/nginx/` solo traen el bloque de HTTP. Los de HTTPS los
+escribe certbot dentro de esos mismos archivos cuando emite un certificado, asi
+que **copiar las plantillas borra la configuracion de TLS**. El sintoma es feo y
+despista: el sitio deja de presentar su certificado y empieza a ofrecer el de
+otro sitio del servidor, y el navegador habla de "nombre de entidad incorrecto".
+
+Por eso `--nginx` vuelve a instalar los certificados despues de copiar. Se usa
+`certbot install`, que **no** habla con Let's Encrypt: solo mete en nginx uno que
+ya existe. Si algun dia hay que repararlo a mano:
+
+```bash
+sudo certbot certificates                      # ver los nombres
+sudo certbot install --nginx --cert-name alfredomejia.com.mx --non-interactive --redirect
+sudo nginx -t && sudo systemctl reload nginx
+```
+
 ## Lo que hay que tener claro
 
 **`DEMO_MODE=true` en este servidor.** `POST /api/demo/session` entrega sesiones
