@@ -192,8 +192,8 @@ fi
 
 say "comprobando"
 for url in "https://$PORTFOLIO_DOMAIN/" "$DEMO_WEB/" "$DEMO_API/health/ready"; do
-  code=$(curl -sS -o /dev/null -w '%{http_code}' -m 15 "$url" 2>/dev/null || echo 000)
-  printf '  %-45s %s\n' "$url" "$code"
+  code=$(curl -sS -o /dev/null -w '%{http_code}' -m 15 "$url" 2>/dev/null || true)
+  printf '  %-45s %s\n' "$url" "${code:-000}"
 done
 
 echo
