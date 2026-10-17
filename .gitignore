@@ -4,6 +4,8 @@ dist/
 .env
 .DS_Store
 
-# Secretos del despliegue: los genera bootstrap.sh en el servidor.
+# Secretos que genera bootstrap.sh en el servidor.
 api.env
-deploy/api.env
+
+# El despliegue vive en su propio repo: ExcessHawk/marketplace-deploy
+deploy/
