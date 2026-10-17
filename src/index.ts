@@ -8,6 +8,7 @@ import {
   WebSocketPlugin,
   registerDrizzle,
 } from 'veloce-ts';
+import { UPLOAD_MAX_BYTES } from '@marketplace/contracts';
 import { db, pool } from './db/client';
 import { AddressController } from './controllers/address.controller';
 import { AdminController } from './controllers/admin.controller';
@@ -23,12 +24,14 @@ import { SalesController } from './controllers/sales.controller';
 import { WebhookController } from './controllers/webhook.controller';
 import { HealthController } from './controllers/health.controller';
 import { SellerController } from './controllers/seller.controller';
+import { UploadController } from './controllers/upload.controller';
 import { createTokenRevocationMiddleware } from './middleware/token-revocation.middleware';
 import { AuditService } from './services/audit.service';
 import { AuthService, customUserProvider } from './services/auth.service';
 import { CartService } from './services/cart.service';
 import { CheckoutService } from './services/checkout.service';
 import { createPaymentProvider } from './services/payments';
+import { createStorageProvider } from './services/storage';
 import { DisputeService } from './services/dispute.service';
 import { ChatService } from './services/chat.service';
 import { ReviewService } from './services/review.service';
@@ -58,6 +61,10 @@ const app = new Veloce({
   title: 'Marketplace API',
   version: '0.1.0',
   description: 'Multi-vendor marketplace built on Veloce-TS',
+  // El tope por omisión del framework es 1 MiB y una foto de producto lo pasa
+  // sin esfuerzo. Este margen deja subir los 2 MiB del contrato más el sobre
+  // del multipart; nginx permite un poco más todavía.
+  bodyLimit: UPLOAD_MAX_BYTES + 512 * 1024,
   cors: {
     origin: (origin: string) => ALLOWED_ORIGINS.has(origin),
     credentials: true,
@@ -123,6 +130,8 @@ const cartService = new CartService();
 const paymentProvider = createPaymentProvider();
 container.register(CartService, { factory: () => cartService, scope: 'singleton' });
 container.register('PaymentProvider', { factory: () => paymentProvider, scope: 'singleton' });
+const storageProvider = createStorageProvider();
+container.register('StorageProvider', { factory: () => storageProvider, scope: 'singleton' });
 container.register(ReviewService, { factory: () => new ReviewService(), scope: 'singleton' });
 const chatService = new ChatService();
 container.register(ChatService, { factory: () => chatService, scope: 'singleton' });
@@ -149,6 +158,7 @@ app.include(HealthController);
 app.include(AuthController);
 app.include(CatalogController);
 app.include(SellerController);
+app.include(UploadController);
 app.include(CartController);
 app.include(AddressController);
 app.include(OrderController);

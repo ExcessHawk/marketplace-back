@@ -1,3 +1,5 @@
+import { readdir, rm } from 'node:fs/promises'
+import { join, resolve } from 'node:path'
 import { Client } from 'pg'
 
 const DOMAIN = '@demo.marketplace.mx'
@@ -143,6 +145,55 @@ for (const [slug, qty] of Object.entries(stock)) {
      WHERE p.id = v.product_id AND p.slug = '${slug}'`)
 }
 console.log('  repuesto: inventario de las cinco piezas')
+
+// ── fotos que subió un visitante a los productos sembrados ───────────────────
+//
+// Los productos que creó el visitante ya se borraron arriba y sus fotos quedan
+// huérfanas solas. Las que hay que soltar a mano son las que le agregó a una
+// pieza de la demostración, que sí sobrevive.
+
+const soltadas = await client.query(`
+  UPDATE variants v
+     SET image_keys = (
+           SELECT COALESCE(jsonb_agg(k), '[]'::jsonb)
+             FROM jsonb_array_elements_text(v.image_keys) AS k
+            WHERE k NOT LIKE '/api/uploads/%'
+         )
+    FROM products p
+    JOIN sellers s ON s.id = p.seller_id
+   WHERE p.id = v.product_id
+     AND s.user_id IN ${demoUsers}
+     AND v.image_keys::text LIKE '%/api/uploads/%'
+  RETURNING v.id`)
+if (soltadas.rowCount) {
+  console.log(`  limpio: fotos añadidas a ${soltadas.rowCount} variante(s) sembrada(s)`)
+}
+
+// ── imágenes que ya no cuelgan de ningún producto ────────────────────────────
+//
+// Las ilustraciones sembradas viven en el frontend (/piezas/...), no aquí, así
+// que lo único que hay en esta carpeta son fotos que subió algún visitante. Se
+// borra lo que ya no referencia ninguna variante; lo demás se queda.
+
+const CLAVE = /^[0-9a-f]{32}\.(jpg|png|webp)$/
+
+const dir = resolve(process.env.UPLOADS_DIR ?? './data/uploads')
+let archivos = []
+try {
+  archivos = (await readdir(dir)).filter((n) => CLAVE.test(n))
+} catch {
+  archivos = []
+}
+
+if (archivos.length) {
+  const { rows } = await client.query(
+    `SELECT DISTINCT jsonb_array_elements_text(image_keys) AS clave FROM variants`,
+  )
+  const vivas = new Set(rows.map((r) => (r.clave ?? '').split('/').pop()))
+  const huerfanas = archivos.filter((n) => !vivas.has(n))
+  await Promise.all(huerfanas.map((n) => rm(join(dir, n), { force: true })))
+  console.log(`  limpio: ${huerfanas.length} imagen(es) sin dueño de ${archivos.length}`)
+}
 
 console.log('')
 console.log('Demostración lista otra vez. Vuelve a correr demo:seed para rehacer el pedido de ejemplo.')

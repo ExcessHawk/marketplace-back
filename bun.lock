@@ -85,7 +85,7 @@
 
     "@ioredis/commands": ["@ioredis/commands@1.10.0", "", {}, "sha512-UmeW7z4LfctwoQ5wkhVzgq8tXkreED2xZGpX+Bg+zA+WJFZCT6c062AfCK/Dfk81xZnnwdhJCUMkitihRaoC2Q=="],
 
-    "@marketplace/contracts": ["@marketplace/contracts@github:ExcessHawk/marketplace-contracts#8516673", { "dependencies": { "zod": "^3.25.76" } }, "ExcessHawk-marketplace-contracts-8516673", "sha512-DAr2O1vY91o0U54lxdl1ei2BayWDCnEN2UDgNvOtbpr1t72Be8E7cmXQf2+iUWmJeU+VV9KB2qf7o/Mb53g+bg=="],
+    "@marketplace/contracts": ["@marketplace/contracts@github:ExcessHawk/marketplace-contracts#8fd2959", { "dependencies": { "zod": "^3.25.76" } }, "ExcessHawk-marketplace-contracts-8fd2959", "sha512-9d8TCVWdWKoWr+/1030lpcXG0ib7sA0je/BoP1Ug5iMpO/dD2q4vDGhDlw4TmJuW4WgDQT/Qkuo6NfD60iZ0pw=="],
 
     "@node-rs/argon2": ["@node-rs/argon2@2.2.2", "", { "optionalDependencies": { "@node-rs/argon2-android-arm-eabi": "2.2.2", "@node-rs/argon2-android-arm64": "2.2.2", "@node-rs/argon2-darwin-arm64": "2.2.2", "@node-rs/argon2-darwin-x64": "2.2.2", "@node-rs/argon2-freebsd-x64": "2.2.2", "@node-rs/argon2-linux-arm-gnueabihf": "2.2.2", "@node-rs/argon2-linux-arm64-gnu": "2.2.2", "@node-rs/argon2-linux-arm64-musl": "2.2.2", "@node-rs/argon2-linux-x64-gnu": "2.2.2", "@node-rs/argon2-linux-x64-musl": "2.2.2", "@node-rs/argon2-win32-arm64-msvc": "2.2.2", "@node-rs/argon2-win32-ia32-msvc": "2.2.2", "@node-rs/argon2-win32-x64-msvc": "2.2.2" } }, "sha512-NtdlPPWtR5U4BxX5EGJYza+UklNaoWORmkaKCMqf/nyKeXWKVwNt8KfQoRpNT7OB1DcEwmePafO4wZyW+sbfCQ=="],
 

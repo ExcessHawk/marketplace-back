@@ -78,3 +78,11 @@ export const demoRateLimit = createRateLimitMiddleware({
   max: Number(process.env.DEMO_RATE_LIMIT_MAX ?? 40),
   keyGenerator: (c) => `demo:${clientIp(c as Context)}`,
 });
+
+// Subir cuesta disco y ancho de banda, no solo CPU. Veinte por minuto alcanza
+// para cargar el catálogo de una tienda a mano y no para llenar el volumen.
+export const uploadRateLimit = createRateLimitMiddleware({
+  windowMs: 60_000,
+  max: Number(process.env.UPLOAD_RATE_LIMIT_MAX ?? 20),
+  keyGenerator: (c) => `upload:${clientIp(c as Context)}`,
+});
