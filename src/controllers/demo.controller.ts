@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Inject, InjectDB, Post, UseMiddleware } from 'veloce-ts';
 import { DemoSessionSchema, type DemoSessionDto } from '@marketplace/contracts';
 import type { DrizzleDB } from '../db/client';
-import { signupRateLimit } from '../middleware/rate-limit.middleware';
+import { demoRateLimit } from '../middleware/rate-limit.middleware';
 import { AuditService } from '../services/audit.service';
 import { DEMO_ROLES } from '../services/demo.constants';
 import { DemoService } from '../services/demo.service';
@@ -22,7 +22,7 @@ export class DemoController {
   }
 
   @Post('/session')
-  @UseMiddleware(signupRateLimit)
+  @UseMiddleware(demoRateLimit)
   async session(@Body(DemoSessionSchema) body: DemoSessionDto) {
     const result = await this.demoService.startSession(this.db, body.role);
 

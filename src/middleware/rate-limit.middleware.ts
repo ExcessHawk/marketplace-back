@@ -67,3 +67,14 @@ export const publicReadRateLimit = createRateLimitMiddleware({
   max: 120,
   keyGenerator: (c) => `read:${clientIp(c as Context)}`,
 });
+
+// La sesión de demostración tiene su propio límite, más holgado que el de
+// registro. El playground gasta una por cada cambio de rol en el iframe y otra
+// en la consola de API, así que con 10 por minuto un visitante curioso choca
+// con el muro en segundos. No hay contraseña que adivinar aquí, de modo que un
+// límite estrecho no protege nada; solo evita que alguien pida tokens sin fin.
+export const demoRateLimit = createRateLimitMiddleware({
+  windowMs: 60_000,
+  max: Number(process.env.DEMO_RATE_LIMIT_MAX ?? 40),
+  keyGenerator: (c) => `demo:${clientIp(c as Context)}`,
+});
