@@ -24,6 +24,7 @@
     "demo:refresh": "bun run scripts/demo-reset.mjs && bun run scripts/demo-seed.mjs"
   },
   "dependencies": {
+    "@marketplace/contracts": "github:ExcessHawk/marketplace-contracts",
     "@node-rs/argon2": "^2.2.2",
     "drizzle-orm": "^0.45.4",
     "hono": "^4.0.0",
