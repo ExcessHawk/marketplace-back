@@ -19,10 +19,14 @@ Lo que vive en el VPS y cómo ponerlo ahí.
 alfredomejia.com.mx        → /var/www/portafolio
 www.alfredomejia.com.mx    → lo mismo
 demo.alfredomejia.com.mx   → /var/www/marketplace + /api + /ws al contenedor
-api.veloce-ts.com          → solo /api, /health y /ws al contenedor
 ```
 
-Los cuatro ya resuelven a `2.25.75.147`.
+Los tres ya resuelven a `2.25.75.147`.
+
+`api.veloce-ts.com` **no es de este proyecto**: es la API de Pensum y vive en el
+mismo servidor. No la toques desde aquí. La API del marketplace se sirve bajo
+`demo.alfredomejia.com.mx/api`, mismo origen que su frontend, que de paso le
+ahorra el CORS.
 
 **El DNS de `veloce-ts.com` lo lleva Netlify**, no Hostinger: sus nameservers
 son `dns1–4.p09.nsone.net`, el pool de NS1 que usa Netlify. Hostinger todavía

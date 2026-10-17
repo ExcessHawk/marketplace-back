@@ -36,7 +36,9 @@ PORTAFOLIO="${PORTAFOLIO_DIR:-$(buscar portafolio-v2 || true)}"
 
 PORTFOLIO_DOMAIN="${PORTFOLIO_DOMAIN:-alfredomejia.com.mx}"
 DEMO_WEB="${DEMO_WEB:-https://demo.alfredomejia.com.mx}"
-DEMO_API="${DEMO_API:-https://api.veloce-ts.com}"
+# La API se sirve bajo el mismo host del demo. api.veloce-ts.com es de otro
+# proyecto y no se toca.
+DEMO_API="${DEMO_API:-https://demo.alfredomejia.com.mx}"
 EMAIL="${CERT_EMAIL:-mejia_alfredo@outlook.com}"
 
 COMPOSE=(docker compose --env-file "$BACK/.env" -f "$BACK/deploy/docker-compose.prod.yml")
@@ -144,7 +146,7 @@ if $do_tls; then
 
   say "nginx"
   cp "$BACK"/deploy/nginx/*.conf /etc/nginx/sites-available/
-  for site in portafolio marketplace api; do
+  for site in portafolio marketplace; do
     ln -sf "/etc/nginx/sites-available/$site.conf" "/etc/nginx/sites-enabled/$site.conf"
   done
   nginx -t
@@ -179,7 +181,6 @@ if $do_tls; then
 
   emitir "$PORTFOLIO_DOMAIN" "www.$PORTFOLIO_DOMAIN"
   emitir demo.alfredomejia.com.mx
-  emitir api.veloce-ts.com
 
   nginx -t
   systemctl reload nginx
@@ -191,7 +192,7 @@ if $do_seed; then
 fi
 
 say "comprobando"
-for url in "https://$PORTFOLIO_DOMAIN/" "$DEMO_WEB/" "$DEMO_API/health/ready"; do
+for url in "https://$PORTFOLIO_DOMAIN/" "$DEMO_WEB/" "$DEMO_WEB/api/categories"; do
   code=$(curl -sS -o /dev/null -w '%{http_code}' -m 15 "$url" 2>/dev/null || true)
   printf '  %-45s %s\n' "$url" "${code:-000}"
 done
