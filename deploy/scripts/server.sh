@@ -6,6 +6,7 @@
 #   bash deploy/scripts/server.sh            # todo: git pull, sitios y API
 #   bash deploy/scripts/server.sh --web      # solo los dos sitios estáticos
 #   bash deploy/scripts/server.sh --api      # solo la API
+#   bash deploy/scripts/server.sh --nginx    # solo recargar nginx (necesita root)
 #   bash deploy/scripts/server.sh --tls      # nginx y certificados (necesita root)
 #   bash deploy/scripts/server.sh --seed     # siembra la demostración
 #   bash deploy/scripts/server.sh --no-pull  # usa lo que ya está clonado
@@ -43,7 +44,7 @@ EMAIL="${CERT_EMAIL:-mejia_alfredo@outlook.com}"
 
 COMPOSE=(docker compose --env-file "$BACK/.env" -f "$BACK/deploy/docker-compose.prod.yml")
 
-do_web=false do_api=false do_tls=false do_seed=false do_pull=true
+do_web=false do_api=false do_tls=false do_seed=false do_nginx=false do_pull=true
 if [ $# -eq 0 ]; then
   do_web=true; do_api=true
 fi
@@ -51,7 +52,8 @@ for arg in "$@"; do
   case "$arg" in
     --web)     do_web=true ;;
     --api)     do_api=true ;;
-    --tls)     do_tls=true ;;
+    --tls)     do_tls=true; do_nginx=true ;;
+    --nginx)   do_nginx=true ;;
     --seed)    do_seed=true ;;
     --all)     do_web=true; do_api=true ;;
     --no-pull) do_pull=false ;;
@@ -141,8 +143,8 @@ if $do_api; then
   "${COMPOSE[@]}" exec -T api bun run db:migrate
 fi
 
-if $do_tls; then
-  [ "$(id -u)" -eq 0 ] || { echo "--tls necesita root. Corre: sudo -E bash deploy/scripts/server.sh --tls"; exit 1; }
+if $do_nginx; then
+  [ "$(id -u)" -eq 0 ] || { echo "Esto necesita root. Corre: sudo -E bash deploy/scripts/server.sh $*"; exit 1; }
 
   say "nginx"
   cp "$BACK"/deploy/nginx/*.conf /etc/nginx/sites-available/
@@ -151,7 +153,10 @@ if $do_tls; then
   done
   nginx -t
   systemctl reload nginx
+  echo "  configuracion recargada"
+fi
 
+if $do_tls; then
   say "certificados"
   # Un certificado por sitio, y solo para los nombres que apuntan AQUÍ. No
   # basta con que resuelvan: un dominio recién comprado resuelve al parking

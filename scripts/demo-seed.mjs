@@ -252,21 +252,23 @@ for (const token of [sellerLogin.tokens.accessToken, secondLogin.tokens.accessTo
 console.log('tarifas de envío puestas')
 
 const artwork = {
-  'jarron-de-talavera-azul-demo': '/demo/jarron-talavera.svg',
-  'juego-de-tazas-barro-brunido-demo': '/demo/tazas-barro.svg',
-  'pinata-de-barro-pintada-demo': '/demo/pinata-barro.svg',
-  'alebrije-jaguar-demo': '/demo/alebrije-jaguar.svg',
-  'alebrije-colibri-demo': '/demo/alebrije-colibri.svg',
+  'jarron-de-talavera-azul-demo': '/piezas/jarron-talavera.svg',
+  'juego-de-tazas-barro-brunido-demo': '/piezas/tazas-barro.svg',
+  'pinata-de-barro-pintada-demo': '/piezas/pinata-barro.svg',
+  'alebrije-jaguar-demo': '/piezas/alebrije-jaguar.svg',
+  'alebrije-colibri-demo': '/piezas/alebrije-colibri.svg',
 }
 
 for (const [slug, file] of Object.entries(artwork)) {
+  // Sin condicion de vacio: tambien corrige las que quedaron apuntando a la
+  // ruta vieja, /demo/, que chocaba con una ruta de la aplicacion.
   await psql(`
     UPDATE variants v
        SET image_keys = '["${file}"]'::jsonb
       FROM products p
      WHERE p.id = v.product_id
        AND p.slug = '${slug}'
-       AND v.image_keys = '[]'::jsonb`)
+       AND v.image_keys <> '["${file}"]'::jsonb`)
 }
 console.log('ilustraciones asignadas')
 
