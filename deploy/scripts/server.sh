@@ -90,11 +90,15 @@ if $do_pull; then
 fi
 
 if $do_web; then
+  # --bun obliga a que los binarios de node_modules corran con bun y no con el
+  # node del sistema. Sin esto, astro y vite siguen su shebang hacia node, y si
+  # el del servidor es viejo, el build muere aunque bun esté al día.
   say "construyendo el portafolio"
-  ( cd "$PORTAFOLIO" && bun install --silent && PUBLIC_DEMO_API="$DEMO_API" PUBLIC_DEMO_WEB="$DEMO_WEB" bun run build )
+  ( cd "$PORTAFOLIO" && bun install --silent &&
+    PUBLIC_DEMO_API="$DEMO_API" PUBLIC_DEMO_WEB="$DEMO_WEB" bun --bun run build )
 
   say "construyendo el frontend del marketplace"
-  ( cd "$FRONT" && bun install --silent && bun run build )
+  ( cd "$FRONT" && bun install --silent && bun --bun run build )
 
   say "publicando los sitios"
   sudo mkdir -p /var/www/portafolio /var/www/marketplace
