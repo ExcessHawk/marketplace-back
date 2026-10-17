@@ -1,16 +1,26 @@
 #!/usr/bin/env bash
-# Prepara el VPS desde cero. Se corre UNA vez, como root.
+# Prepara el VPS desde cero. Se corre UNA vez, como root, desde el repo:
 #
-#   ssh root@2.25.75.147 'bash -s' < deploy/scripts/bootstrap.sh
+#   cd ~/portafolio/.../marketplace-back
+#   bash deploy/scripts/bootstrap.sh
 #
-# Deja instalado: Docker, nginx, certbot, ufw y un usuario `deploy` sin sudo
-# para los archivos del sitio. No despliega nada todavía: eso es release.sh.
+# Deja instalado Docker, bun, nginx, certbot, ufw y fail2ban, y genera los
+# secretos. No despliega nada: eso es server.sh.
 
 set -euo pipefail
 
 SSH_PORT="${SSH_PORT:-22}"
-APP_DIR="${APP_DIR:-$HOME/portafolio/marketplace-back}"
+# La raíz del repo sale de dónde está este archivo, no de una ruta adivinada:
+# los clones pueden colgar de cualquier carpeta.
+APP_DIR="${APP_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 WEB_DIR=/var/www
+
+if [ ! -f "$APP_DIR/package.json" ]; then
+  echo "No parece el repo del backend: $APP_DIR"
+  echo "Corre esto desde la raíz de marketplace-back."
+  exit 1
+fi
+echo "repo: $APP_DIR"
 
 echo "==> paquetes base"
 export DEBIAN_FRONTEND=noninteractive
@@ -30,20 +40,42 @@ fi
 systemctl enable --now docker
 
 echo "==> bun"
-if ! command -v bun >/dev/null 2>&1; then
+# Los lockfiles de este proyecto son de bun 1.4. Un bun 1.3 no sabe leerlos:
+# los ignora y vuelve a resolver, que es justo lo que un lockfile evita.
+BUN_MIN_MAJOR=1
+BUN_MIN_MINOR=4
+bun_viejo() {
+  command -v bun >/dev/null 2>&1 || return 0
+  local v major minor
+  v=$(bun --version 2>/dev/null) || return 0
+  major=${v%%.*}
+  minor=$(echo "$v" | cut -d. -f2)
+  [ "$major" -lt "$BUN_MIN_MAJOR" ] && return 0
+  [ "$major" -eq "$BUN_MIN_MAJOR" ] && [ "$minor" -lt "$BUN_MIN_MINOR" ] && return 0
+  return 1
+}
+
+if bun_viejo; then
+  echo "    instalando o actualizando bun"
   curl -fsSL https://bun.sh/install | bash
-  ln -sf "$HOME/.bun/bin/bun" /usr/local/bin/bun
+  for candidate in "$HOME/.bun/bin/bun" /root/.bun/bin/bun; do
+    [ -x "$candidate" ] && ln -sf "$candidate" /usr/local/bin/bun && break
+  done
+  hash -r
 fi
-bun --version
+echo "    bun $(bun --version)"
+if bun_viejo; then
+  echo "    !! sigue siendo anterior a 1.4; los lockfiles se van a resolver de nuevo"
+fi
 
 echo "==> certbot"
 apt-get install -y -qq certbot python3-certbot-nginx
 
 echo "==> usuario deploy"
-# El usuario deploy no tiene contraseña: solo se entra con llave. Si no hay
-# ninguna, release.sh no podría conectarse nunca. Por eso se pasa la pública
-# desde la máquina de desarrollo:
-#   ssh root@IP "AUTHORIZED_KEY='$(cat ~/.ssh/id_ed25519.pub)' bash -s" < bootstrap.sh
+# Opcional. Si vas a desplegar entrando como root al servidor, no lo necesitas:
+# server.sh corre con quien lo invoque. Sirve si prefieres un usuario aparte,
+# sin contraseña y solo con llave. Para darle una:
+#   AUTHORIZED_KEY="$(cat ~/.ssh/id_ed25519.pub)" bash deploy/scripts/bootstrap.sh
 AUTHORIZED_KEY="${AUTHORIZED_KEY:-}"
 
 if ! id deploy >/dev/null 2>&1; then
@@ -68,13 +100,8 @@ elif [ -s /root/.ssh/authorized_keys ]; then
   chmod 600 /home/deploy/.ssh/authorized_keys
   echo "    deploy hereda las llaves de root"
 else
-  echo
-  echo "  !! No pasaste AUTHORIZED_KEY y root no tiene llaves."
-  echo "     El usuario deploy no tiene contraseña, así que nadie puede entrar"
-  echo "     con él y release.sh va a fallar. Vuelve a correr esto así:"
-  echo
-  echo "       ssh root@IP \"AUTHORIZED_KEY='\\\$(cat ~/.ssh/id_ed25519.pub)' bash -s\" < bootstrap.sh"
-  echo
+  echo "    sin llave: el usuario deploy queda creado pero no se puede entrar con él"
+  echo "    (no estorba; si despliegas como root, no hace falta)"
 fi
 
 echo "==> carpetas"

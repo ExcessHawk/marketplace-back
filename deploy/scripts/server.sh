@@ -20,8 +20,19 @@ set -euo pipefail
 
 BACK="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BASE="$(dirname "$BACK")"
-FRONT="${FRONT_DIR:-$BASE/marketplace-front}"
-PORTAFOLIO="${PORTAFOLIO_DIR:-$BASE/portafolio-v2}"
+
+# Los clones pueden colgar del mismo nivel que este repo o de uno más arriba,
+# según cómo se haya clonado. Se buscan en ambos antes de rendirse.
+buscar() {
+  local nombre="$1" dir
+  for dir in "$BASE/$nombre" "$(dirname "$BASE")/$nombre" "$BASE/marketplace/$nombre"; do
+    [ -d "$dir" ] && { echo "$dir"; return 0; }
+  done
+  return 1
+}
+
+FRONT="${FRONT_DIR:-$(buscar marketplace-front || true)}"
+PORTAFOLIO="${PORTAFOLIO_DIR:-$(buscar portafolio-v2 || true)}"
 
 PORTFOLIO_DOMAIN="${PORTFOLIO_DOMAIN:-alfredomejia.com.mx}"
 DEMO_WEB="${DEMO_WEB:-https://demo.alfredomejia.com.mx}"
@@ -49,13 +60,21 @@ done
 say() { printf '\n==> %s\n' "$1"; }
 
 falta() {
-  echo "No encontré $1."
-  echo "Si los clones están en otro lado, dímelo con FRONT_DIR= y PORTAFOLIO_DIR=."
+  echo "No encontré el repo $1 cerca de $BACK."
+  echo "Busqué en:"
+  echo "  $BASE/$1"
+  echo "  $(dirname "$BASE")/$1"
+  echo "  $BASE/marketplace/$1"
+  echo "Si está en otro lado, pásalo así:"
+  echo "  FRONT_DIR=/ruta/marketplace-front PORTAFOLIO_DIR=/ruta/portafolio-v2 bash $0 $*"
   exit 1
 }
 
-[ -d "$FRONT" ] || falta "$FRONT"
-[ -d "$PORTAFOLIO" ] || falta "$PORTAFOLIO"
+[ -n "$FRONT" ] && [ -d "$FRONT" ] || falta marketplace-front
+[ -n "$PORTAFOLIO" ] && [ -d "$PORTAFOLIO" ] || falta portafolio-v2
+
+echo "repos:"
+printf '  %-14s %s\n' back "$BACK" front "$FRONT" portafolio "$PORTAFOLIO"
 
 if ! command -v bun >/dev/null 2>&1; then
   echo "Falta bun. Instálalo con: curl -fsSL https://bun.sh/install | bash"
