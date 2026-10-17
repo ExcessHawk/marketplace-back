@@ -1,0 +1,1 @@
+ALTER TABLE "sellers" ADD COLUMN "status_reason" text;

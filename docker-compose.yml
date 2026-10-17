@@ -1,0 +1,40 @@
+# Local infrastructure for the marketplace backend.
+# Ports follow proyectos/00-base/PLANTILLA.md: 5442 for Postgres, so this runs
+# alongside the SaaS (5433) and citas (5434) databases without a clash.
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: marketplace_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-marketplace}
+    ports:
+      - '5442:5432'
+    volumes:
+      - marketplace_pgdata:/var/lib/postgresql/data
+      # Runs once on an empty data directory: extensions and the immutable
+      # unaccent wrapper the product search index depends on.
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-marketplace}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: marketplace_redis
+    restart: unless-stopped
+    ports:
+      - '6442:6379'
+    command: ['redis-server', '--appendonly', 'no']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  marketplace_pgdata:

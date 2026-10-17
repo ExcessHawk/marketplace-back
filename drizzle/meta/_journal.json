@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791687792536,
+      "tag": "0000_magenta_richard_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791696095580,
+      "tag": "0001_abnormal_grandmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791944471429,
+      "tag": "0002_wet_wilson_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791948589052,
+      "tag": "0003_pale_darkstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791996546390,
+      "tag": "0004_yummy_fat_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792000348776,
+      "tag": "0005_silent_the_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792003900169,
+      "tag": "0006_adorable_black_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792005101388,
+      "tag": "0007_unique_infant_terrible",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792005905028,
+      "tag": "0008_open_stryfe",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792194271274,
+      "tag": "0009_short_lockjaw",
+      "breakpoints": true
+    }
+  ]
+}

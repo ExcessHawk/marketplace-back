@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022"],
+    "moduleResolution": "bundler",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": ["bun"],
+    /*
+     * The Zod schemas are shared verbatim with the frontend (one schema, two
+     * uses — 00-base/PLANTILLA.md). A `file:` dependency is the usual way to do
+     * this, but bun fails to link it on Windows (EPERM copying from cache), so
+     * a path alias does the job: bun resolves tsconfig paths natively and Vite
+     * mirrors it with resolve.alias.
+     */
+    "paths": {
+      "zod": ["./node_modules/zod"],
+      "@marketplace/contracts": ["../shared/schemas/index.ts"],
+      "@marketplace/contracts/*": ["../shared/schemas/*"]
+    }
+  },
+  "include": ["src/**/*", "scripts/**/*.ts", "drizzle.config.ts", "../shared/schemas/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
