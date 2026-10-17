@@ -3,3 +3,7 @@ dist/
 *.log
 .env
 .DS_Store
+
+# Secretos del despliegue: los genera bootstrap.sh en el servidor.
+api.env
+deploy/api.env
